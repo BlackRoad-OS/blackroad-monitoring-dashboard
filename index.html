@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlackRoad Unified Monitoring Dashboard</title>
+    <style>
+        :root {
+            --amber: #F5A623;
+            --hot-pink: #FF1D6C;
+            --violet: #9C27B0;
+            --electric-blue: #2979FF;
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --space-xs: 8px;
+            --space-sm: 13px;
+            --space-md: 21px;
+            --space-lg: 34px;
+            --space-xl: 55px;
+            --green: #00ff88;
+            --yellow: #ffaa00;
+            --red: #ff3366;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.618;
+            padding: var(--space-md);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: var(--space-lg);
+            padding: var(--space-lg);
+            background: linear-gradient(135deg, var(--amber) 0%, var(--hot-pink) 38.2%, var(--violet) 61.8%, var(--electric-blue) 100%);
+            border-radius: var(--space-sm);
+        }
+
+        .header h1 {
+            font-size: 34px;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+
+        .header .subtitle {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .header .last-update {
+            margin-top: var(--space-sm);
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-lg);
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--space-sm);
+            padding: var(--space-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+            padding-bottom: var(--space-sm);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .card-title {
+            font-size: 21px;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: var(--space-xs);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-green { background: var(--green); }
+        .status-yellow { background: var(--yellow); }
+        .status-red { background: var(--red); }
+
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            padding: var(--space-xs) 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .metric:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            color: var(--text-secondary);
+            font-size: 13px;
+        }
+
+        .metric-value {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .service-list {
+            list-style: none;
+        }
+
+        .service-item {
+            padding: var(--space-xs);
+            margin-bottom: var(--space-xs);
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-name {
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .service-status {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: var(--space-lg);
+            color: var(--text-secondary);
+        }
+
+        .error {
+            color: var(--red);
+            font-size: 13px;
+            padding: var(--space-sm);
+            background: rgba(255, 51, 102, 0.1);
+            border-radius: 8px;
+            margin-top: var(--space-sm);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-sm);
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.03);
+            padding: var(--space-sm);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 34px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--amber), var(--hot-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: var(--space-xs);
+        }
+
+        .activity-log {
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 11px;
+            font-family: 'SF Mono', 'Monaco', monospace;
+        }
+
+        .activity-item {
+            padding: var(--space-xs);
+            border-left: 2px solid var(--amber);
+            margin-bottom: var(--space-xs);
+            padding-left: var(--space-sm);
+        }
+
+        .activity-time {
+            color: var(--text-secondary);
+            font-size: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>BlackRoad Unified Monitoring Dashboard</h1>
+        <div class="subtitle">Real-time Infrastructure, Services & Agent Monitoring</div>
+        <div class="last-update">Last Updated: <span id="lastUpdate">Loading...</span></div>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- Infrastructure Health -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Infrastructure Nodes</h2>
+                <span id="infra-status" class="status-indicator status-green"></span>
+            </div>
+            <ul class="service-list" id="infrastructure-list">
+                <li class="loading">Loading infrastructure status...</li>
+            </ul>
+        </div>
+
+        <!-- Deployed Services -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Deployed Services</h2>
+                <span id="services-status" class="status-indicator status-green"></span>
+            </div>
+            <ul class="service-list" id="services-list">
+                <li class="loading">Loading services...</li>
+            </ul>
+        </div>
+
+        <!-- GitHub Activity -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">GitHub Organizations</h2>
+                <span id="github-status" class="status-indicator status-green"></span>
+            </div>
+            <div class="stats-grid" id="github-stats">
+                <div class="loading">Loading GitHub stats...</div>
+            </div>
+        </div>
+
+        <!-- Cloudflare Status -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Cloudflare Infrastructure</h2>
+                <span id="cloudflare-status" class="status-indicator status-green"></span>
+            </div>
+            <div id="cloudflare-info">
+                <div class="loading">Loading Cloudflare status...</div>
+            </div>
+        </div>
+
+        <!-- Claude Agents -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Claude Agents</h2>
+                <span id="agents-status" class="status-indicator status-green"></span>
+            </div>
+            <div class="stats-grid" id="agents-stats">
+                <div class="loading">Loading agent status...</div>
+            </div>
+        </div>
+
+        <!-- Memory System -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">[MEMORY] System</h2>
+                <span id="memory-status" class="status-indicator status-green"></span>
+            </div>
+            <div id="memory-info">
+                <div class="loading">Loading memory status...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Activity Log -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Recent Activity</h2>
+        </div>
+        <div class="activity-log" id="activity-log">
+            <div class="loading">Loading activity...</div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
